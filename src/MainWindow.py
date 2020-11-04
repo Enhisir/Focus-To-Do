@@ -21,8 +21,7 @@ class MainWindow(QWidget):
         self.label = QLabel("Мои задания")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
-        self.gridLayout.addItem(QSpacerItem(87, 20, QSizePolicy.Expanding, QSizePolicy.Minimum), 0,
-                                1, 1, 1)
+        self.gridLayout.addItem(QSpacerItem(87, 20, QSizePolicy.Expanding, QSizePolicy.Minimum), 0, 1, 1, 1)
 
         self.status_label = QLabel("Состояние:")
         self.status_label.setMinimumSize(QtCore.QSize(100, 20))
@@ -31,15 +30,17 @@ class MainWindow(QWidget):
         self.status_box = QComboBox(self)
         self.status_box.setMinimumSize(QtCore.QSize(100, 0))
 
-        self.status_box.addItem("Все")
         self.status_box.addItem("В процессе")
         self.status_box.addItem("Сделано")
         self.status_box.addItem("Просрочено")
-        self.status_box.setCurrentIndex(0)
+        self.status_box.addItem("Все")
+        self.status_box.setCurrentIndex(3)
         self.gridLayout.addWidget(self.status_box, 0, 3, 1, 3)
+        self.status_box.currentIndexChanged.connect(self.customize_table)
 
         self.listWidget = QListWidget(self)
-        self.load_table()
+        self.load_table(self.DB.data, clear_DB=True)
+        self.DB.data = []
         self.gridLayout.addWidget(self.listWidget, 1, 0, 1, 6)
 
         self.new_task_btn = QPushButton(self, text="Новое задание")
@@ -76,19 +77,33 @@ class MainWindow(QWidget):
     def delete_action(self):
         self.listWidget.takeItem(self.listWidget.currentRow())
 
-    def load_table(self):
-        for task in self.DB.data:
+    def load_table(self, data, clear_DB=False):
+        self.listWidget.clear()
+        for task in data:
             Item = ToDoWidget(task)
             WidgetItem = QListWidgetItem(self.listWidget)
             WidgetItem.setSizeHint(Item.sizeHint())
             self.listWidget.addItem(WidgetItem)
             self.listWidget.setItemWidget(WidgetItem, Item)
+        if clear_DB:
+            self.DB.data.clear()
 
-    def change_table(self):
-        self.DB.data = [self.listWidget.itemWidget(self.listWidget.item(i)).task for i in
-                        range(self.listWidget.count())]
+    def customize_table(self):
+        index = self.status_box.currentIndex()
+        self.save_data()
+        if index == 3:
+            self.load_table(self.DB.data, clear_DB=True)
+        else:
+            self.load_table(filter(lambda x: x.status_id == index, self.DB.data))
+            self.DB.data = list(filter(lambda x: x.status_id != index, self.DB.data))
+
+    def save_data(self):
+        items = []
+        for i in range(self.listWidget.count()):
+            items.append(self.listWidget.itemWidget(self.listWidget.item(i)).task)
+        self.DB.data += items
 
     def closeEvent(self, event):
-        self.change_table()
+        self.save_data()
         self.DB.close()
         super(MainWindow, self).closeEvent(event)
