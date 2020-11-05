@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QPushButton, QListWidget, QListWidgetItem
 class MainWindow(QWidget):
     def __init__(self):
         super(QWidget, self).__init__()
-        self.setWindowIcon(QIcon(os.path.join(path, "img", 'icon.png')))
+        self.setWindowIcon(QIcon(os.path.join(path, "img", 'icon.ico')))
         self.setGeometry(200, 200, 600, 600)
         self.setWindowTitle("Focus")
         self.DB = DBEngine()
