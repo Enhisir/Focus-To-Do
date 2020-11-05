@@ -13,7 +13,7 @@ class ToDoWidget(QWidget):
         self.pics = {
             0: QPixmap(os.path.join(path, "img", "in progress.png")),
             1: QPixmap(os.path.join(path, "img", "done.png")),
-            2: QPixmap(os.path.join(path, "img", "failed.jpg")),
+            2: QPixmap(os.path.join(path, "img", "failed.png")),
         }
         self.task = task
         self.HBoxLayout = QHBoxLayout()
