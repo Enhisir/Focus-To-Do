@@ -1,8 +1,11 @@
+from src import path
 from src.DBEngine import DBEngine
 from src.ToDoWidget import ToDoWidget
 from src.Task import Task
 
+import os
 from PyQt5 import QtCore
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QSpacerItem, QSizePolicy, QComboBox
 from PyQt5.QtWidgets import QPushButton, QListWidget, QListWidgetItem
 
@@ -10,8 +13,9 @@ from PyQt5.QtWidgets import QPushButton, QListWidget, QListWidgetItem
 class MainWindow(QWidget):
     def __init__(self):
         super(QWidget, self).__init__()
+        self.setWindowIcon(QIcon(os.path.join(path, "img", 'icon.png')))
         self.setGeometry(200, 200, 600, 600)
-        self.setWindowTitle("Focus To-Do")
+        self.setWindowTitle("Focus")
         self.DB = DBEngine()
         self.initUI()
 
