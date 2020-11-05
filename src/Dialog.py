@@ -34,28 +34,44 @@ class Dialog(QDialog):
         self.status_box.setCurrentIndex(self.main.task.status_id)
         layout.addWidget(self.status_box)
 
-        HBoxLayout = QHBoxLayout()
+        imp_l = QLabel("Важность")
+        layout.addWidget(imp_l)
 
-        pBtn = QPushButton('Сохранить')
-        HBoxLayout.addWidget(pBtn, 0)
-        pBtn.clicked.connect(self.push)
+        self.imp_box = QComboBox()
+        self.imp_box.setMinimumSize(QSize(150, 0))
+        self.imp_box.addItem("Обычное")
+        self.imp_box.addItem("Важное")
+        self.imp_box.setCurrentIndex(self.main.task.is_imp)
+        layout.addWidget(self.imp_box)
 
-        cBtn = QPushButton('Отмена')
-        HBoxLayout.addWidget(cBtn, 1)
-        cBtn.clicked.connect(self.cancel)
+        h_box_layout = QHBoxLayout()
 
-        layout.addLayout(HBoxLayout)
+        p_btn = QPushButton('Сохранить')
+        h_box_layout.addWidget(p_btn, 0)
+        p_btn.clicked.connect(self.push)
+
+        c_btn = QPushButton('Отмена')
+        h_box_layout.addWidget(c_btn, 1)
+        c_btn.clicked.connect(self.cancel)
+
+        layout.addLayout(h_box_layout)
         self.setLayout(layout)
 
     def push(self):
+        self.main.is_created = True
         self.main.task.name = self.name.text()
         self.main.task.description = self.desc.toPlainText()
         self.main.task.status_id = self.status_box.currentIndex()
+        self.main.task.is_imp = self.imp_box.currentIndex()
         self.main.display()
         self.close()
 
     def cancel(self):
-        if not self.main.is_added_to_List:
-            self.main.is_created = False
         self.main.display()
         self.close()
+
+    def closeEvent(self, event):
+        if self.main.is_created:
+            super(Dialog, self).closeEvent(event)
+        else:
+            self.cancel()

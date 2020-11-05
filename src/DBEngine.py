@@ -17,7 +17,7 @@ class DBEngine:
     def save_changes(self):
         self.cursor.execute("DELETE FROM todo")
         for task in self.data:
-            self.cursor.execute("""INSERT INTO todo(name, description, status_id) VALUES (?, ?, ?)""",
+            self.cursor.execute("""INSERT INTO todo(name, description, status_id, imp) VALUES (?, ?, ?, ?)""",
                                 task.to_row()[1:])
         self.connection.commit()
         self.load_db()
