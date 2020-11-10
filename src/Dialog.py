@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QTextEdit, QComboBox, QPushButton
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QTextEdit, QComboBox, QPushButton, QDateEdit, QCheckBox
 from PyQt5.QtCore import QSize
 
 
@@ -34,7 +34,7 @@ class Dialog(QDialog):
         self.status_box.setCurrentIndex(self.main.task.status_id)
         layout.addWidget(self.status_box)
 
-        imp_l = QLabel("Важность")
+        imp_l = QLabel("Важность:")
         layout.addWidget(imp_l)
 
         self.imp_box = QComboBox()
@@ -44,25 +44,48 @@ class Dialog(QDialog):
         self.imp_box.setCurrentIndex(self.main.task.is_imp)
         layout.addWidget(self.imp_box)
 
-        h_box_layout = QHBoxLayout()
+        self.have_date = QCheckBox(text="Дата:")
+        self.have_date.setCheckState(self.main.task.have_dt)
+        layout.addWidget(self.have_date)
+        self.have_date.stateChanged.connect(self.date_state_change)
+
+        date_l = QLabel("Дата:")
+        layout.addWidget(date_l)
+
+        self.date_edit = QDateEdit()
+        self.date_edit.setDate(self.main.task.date)
+        self.date_edit.setMinimumSize(QSize(150, 0))
+        self.date_state_change()
+        layout.addWidget(self.date_edit)
+
+        button_layout = QHBoxLayout()
 
         p_btn = QPushButton('Сохранить')
-        h_box_layout.addWidget(p_btn, 0)
+        button_layout.addWidget(p_btn, 0)
+        self.p_btn_pushed = False
         p_btn.clicked.connect(self.push)
 
         c_btn = QPushButton('Отмена')
-        h_box_layout.addWidget(c_btn, 1)
+        button_layout.addWidget(c_btn, 1)
         c_btn.clicked.connect(self.cancel)
 
-        layout.addLayout(h_box_layout)
+        layout.addLayout(button_layout)
         self.setLayout(layout)
 
+    def date_state_change(self):
+        self.date_edit.setEnabled(self.have_date.isChecked())
+
     def push(self):
-        self.main.is_created = True
         self.main.task.name = self.name.text()
         self.main.task.description = self.desc.toPlainText()
-        self.main.task.status_id = self.status_box.currentIndex()
+        if self.main.task.status_id != self.status_box.currentIndex():
+            self.main.task.status_id = self.status_box.currentIndex()
+            self.main.status_changed = True
         self.main.task.is_imp = self.imp_box.currentIndex()
+        self.main.task.have_dt = self.have_date.isChecked()
+        self.main.task.date = self.date_edit.date().toPyDate()
+        self.main.is_created = True
+        self.p_btn_pushed = True
         self.main.display()
         self.close()
 
@@ -71,7 +94,7 @@ class Dialog(QDialog):
         self.close()
 
     def closeEvent(self, event):
-        if self.main.is_created:
+        if self.main.is_created and self.p_btn_pushed:
             super(Dialog, self).closeEvent(event)
         else:
             self.cancel()

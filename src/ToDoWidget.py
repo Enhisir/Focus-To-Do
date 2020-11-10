@@ -7,9 +7,11 @@ from PyQt5.QtGui import QPixmap
 
 
 class ToDoWidget(QWidget):
-    def __init__(self, task, parent=None):
+    def __init__(self, task, MainWindow, parent=None):
         super(QWidget, self).__init__(parent)
+        self.MainWindow = MainWindow
         self.is_created = False
+        self.status_changed = False
         self.pics = {
             0: QPixmap(os.path.join(path, "img", "in progress.png")),
             1: QPixmap(os.path.join(path, "img", "done.png")),
@@ -34,9 +36,13 @@ class ToDoWidget(QWidget):
         self.edit_btn = QPushButton(self, text="Открыть")
         self.edit_btn.setMaximumSize(100, 20)
         self.HBoxLayout.addWidget(self.edit_btn, 3)
-        self.edit_btn.clicked.connect(Dialog(self).exec)
+        self.edit_btn.clicked.connect(self.new_dialog)
 
         self.setLayout(self.HBoxLayout)
+    
+    def new_dialog(self):
+        new_message = Dialog(self)
+        new_message.exec_()
 
     def display(self):
         self.status_icon.setPixmap(self.pics[self.task.status_id])
@@ -45,3 +51,7 @@ class ToDoWidget(QWidget):
         else:
             self.name.setText(self.task.name)
         self.is_imp.setText("Важное" if self.task.is_imp == 1 else "")
+        if self.status_changed:
+            print(self.MainWindow)
+            self.MainWindow.customize_table()
+
