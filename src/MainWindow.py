@@ -2,12 +2,13 @@ from src import path
 from src.DBEngine import DBEngine
 from src.ToDoWidget import ToDoWidget
 from src.Task import Task
+from docx import Document
 
 import os
 from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QSpacerItem, QSizePolicy, QComboBox
-from PyQt5.QtWidgets import QPushButton, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QPushButton, QListWidget, QListWidgetItem, QFileDialog
 
 
 class MainWindow(QWidget):
@@ -61,6 +62,11 @@ class MainWindow(QWidget):
         self.gridLayout.addWidget(self.delete_btn, 2, 4, 1, 2)
         self.delete_btn.clicked.connect(self.delete_action)
 
+        self.export_btn = QPushButton(text="Экспорт в документ")
+        self.export_btn.setMinimumSize(QtCore.QSize(150, 50))
+        self.gridLayout.addWidget(self.export_btn, 3, 0, 1, 6)
+        self.export_btn.clicked.connect(self.export_to_docx)
+
     def new_task_action(self):
         item = ToDoWidget(Task(), self)
         item.edit_btn.click()
@@ -81,6 +87,23 @@ class MainWindow(QWidget):
 
     def delete_action(self):
         self.listWidget.takeItem(self.listWidget.currentRow())
+
+    def export_to_docx(self):
+        data = self.DB.get_data() + [self.listWidget.itemWidget(self.listWidget.item(i)).task
+                                     for i in range(self.listWidget.count())]
+        file_path = QFileDialog.getSaveFileName(self, "Сохранить как", 'focus-backup.docx',
+                                                'Документ Word (*.docx);;;;Все файлы (*)')[0]
+        document = Document()
+        for task in data:
+            st_id = task.status_id
+            st_id = 'В процессе' if st_id == 0 else 'Сделано' if st_id == 1 else 'Просрочено'
+            document.add_heading(task.name, 2)
+            document.add_paragraph(f"дата: {str(task.date) if task.have_dt else 'Нет'}")
+            document.add_paragraph(f"Статус задания: {st_id}")
+            document.add_paragraph(f"Важность: {'Да' if task.is_imp else 'Нет'}")
+            document.add_paragraph(f"Описание: {task.description}")
+            document.add_paragraph()
+        document.save(file_path)
 
     def load_table(self, data, clear_data=False):
         self.listWidget.clear()
